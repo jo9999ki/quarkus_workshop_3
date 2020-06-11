@@ -1,4 +1,4 @@
-package de.jk.quarkus.trains.exception;
+package de.sn.quarkus.businessfunctions.exception;
 
 import java.util.List;
 

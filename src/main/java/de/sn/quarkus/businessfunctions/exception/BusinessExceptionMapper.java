@@ -1,4 +1,4 @@
-package de.jk.quarkus.trains.exception;
+package de.sn.quarkus.businessfunctions.exception;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;

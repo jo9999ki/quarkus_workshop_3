@@ -21,13 +21,16 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.resteasy.annotations.jaxrs.PathParam;
 
-import de.jk.quarkus.trains.exception.RecordNotFoundException;
+import de.sn.quarkus.businessfunctions.exception.BusinessException;
+import de.sn.quarkus.businessfunctions.exception.RecordNotFoundException;
 import de.sn.quarkus.businessfunctions.model.Item;
 import de.sn.quarkus.businessfunctions.model.Project;
 import io.quarkus.panache.common.Page;
 
+@Tag(name= "Items") //OpenAPI
 @Path("/items")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
@@ -167,7 +170,7 @@ public class ItemResource {
     	}
     	
     	if (item.items.size() > 0) {
-    		throw new Exception("Item contains sub items, which have to be deleted before!");
+    		throw new BusinessException("40009", "Item contains sub items, which have to be deleted before!");
     	}    		
 
     	//Delete item from project
