@@ -1,9 +1,13 @@
 package de.sn.quarkus.businessfunctions.exception;
 
+import java.time.Instant;
 import java.util.List;
+
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
+@Schema(name="error", description="standardized attributes of and error.")//OpenAPI
 @RegisterForReflection
 public class ErrorResponse
 {
@@ -17,18 +21,23 @@ public class ErrorResponse
     }
  
     //Unique error code
+    @Schema(description = "unique code for single error type", required = true, example = "40001", format = "String") //OpenAPI
     private String code;
     
     //General error message about nature of error
+    @Schema(description = "error message message", required = true, example = "valid value between 0 and 255", format = "String") //OpenAPI
     private String message;
  
     //Input parameter, which caused the error
+    @Schema(description = "optional, e.g. if validation of input parameter fails", required = false, example = "lastName", format = "String") //OpenAPI
     private String parameter;
 
     //Input parameter, which caused the error
+    @Schema(description = "optional, e.g. if validation of input parameter fails", required = false, example = "James", format = "String") //OpenAPI
     private String value;
 
     //Specific errors in API request processing
+    @Schema(description = "optional, e.g. if more details can be posted", required = false, example = "stack trace exception", format = "String") //OpenAPI
     private List<String> details;
 
 	public String getCode() {

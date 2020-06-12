@@ -14,7 +14,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 	            @Tag(name="Items", description="Single business function items")
 	    },
 	    info = @Info(
-	        title="Locomotive DCC API",
+	        title="Business Functions API",
 	        description = "OpenAPI document structure standard: version 3.0",
 	        version = "1.0.0",
 	        contact = @Contact(

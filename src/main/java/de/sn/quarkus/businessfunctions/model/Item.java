@@ -13,6 +13,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.hibernate.validator.constraints.Length;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
@@ -21,6 +22,7 @@ import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Parameters;
 
 @Entity
+@Schema(name="Item", description="business function item") //OpenAPI
 public class Item extends PanacheEntity{
 	
 	@NotNull(message="item name cannot be blank") //Validation

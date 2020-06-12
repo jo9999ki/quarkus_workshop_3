@@ -21,10 +21,19 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.enums.ParameterIn;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameters;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.resteasy.annotations.jaxrs.PathParam;
 
 import de.sn.quarkus.businessfunctions.exception.BusinessException;
+import de.sn.quarkus.businessfunctions.exception.ErrorsResponse;
 import de.sn.quarkus.businessfunctions.exception.RecordNotFoundException;
 import de.sn.quarkus.businessfunctions.model.Item;
 import de.sn.quarkus.businessfunctions.model.Project;
@@ -45,6 +54,18 @@ public class ItemResource {
 
 	@GET
 	@Path("/project/{projectid}")
+	@Operation(summary = "List of items of a certain project")
+	@Parameters({
+		@Parameter(name = "projectid", in = ParameterIn.PATH,required = true, 
+    			description = "project id, value >= 0"),
+		@Parameter(name = "pageNum", in = ParameterIn.QUERY,required = false, 
+    			description = "number of requested page, value >= 0"),
+    	@Parameter(name = "pageSize", in = ParameterIn.QUERY,required = false, 
+		description = "size of page (number of records), value >= 0" )
+    	})
+    @APIResponse(responseCode = "200", description = "Total list of items for that project", 
+    		content = @Content(mediaType = "application/json",
+            		schema = @Schema(type = SchemaType.ARRAY, implementation = Item.class)))
     public Response getPagableItemListForProject(
     		@PathParam("projectid") @NotNull Long projectid,
     		@QueryParam("pageNum") @DefaultValue("0") @Min(0) int pageNum, 
@@ -60,6 +81,20 @@ public class ItemResource {
 	
 	@GET
 	@Path("/project/{projectid}/level/{level}")
+	@Operation(summary = "List of items of a certain project on given level, sub items will be shown in hierarchy too")
+	@Parameters({
+		@Parameter(name = "projectid", in = ParameterIn.PATH,required = true, 
+    			description = "project id, value >= 0"),
+		@Parameter(name = "level", in = ParameterIn.PATH,required = true, 
+		description = "level of items, value >= 0"),
+		@Parameter(name = "pageNum", in = ParameterIn.QUERY,required = false, 
+    			description = "number of requested page, value >= 0"),
+    	@Parameter(name = "pageSize", in = ParameterIn.QUERY,required = false, 
+		description = "size of page (number of records), value >= 0" )
+    	})
+	 @APIResponse(responseCode = "200", description = "List of items for that project and item level", 
+		content = @Content(mediaType = "application/json",
+     		schema = @Schema(type = SchemaType.ARRAY, implementation = Item.class)))
     public Response getPagableItemListForProjectAndLevel(
     		@PathParam("projectid") @NotNull Long projectid,
     		@PathParam("level") @NotNull Integer level,
@@ -76,6 +111,13 @@ public class ItemResource {
 	
 	@GET
     @Path("/{id}")
+    @Operation(summary = "Get item for id")
+    @Parameters({
+    	@Parameter(name = "id", in = ParameterIn.PATH, required = true, 
+    			description = "unique item identifier")})
+    @APIResponse(responseCode = "200", description = "item for id", 
+    		content = @Content(mediaType = "application/json",
+            		schema = @Schema(type = SchemaType.ARRAY, implementation = Item.class)))
 	public Response getItemById(
     		@PathParam("id") @NotNull Long id) {
     	long timestamp = System.currentTimeMillis();
@@ -91,6 +133,16 @@ public class ItemResource {
 	
 	@POST
 	@Path("/project/{projectid}")
+    @Operation(summary = "Create new main item for given project")
+    @APIResponse(responseCode = "201", description = "Created item",
+                 content = @Content(mediaType = "application/json",
+                 	schema = @Schema(implementation = Item.class)))
+    @APIResponse(responseCode = "400", description = "Invalid request data",
+    content = @Content(mediaType = "application/json",
+ 	schema = @Schema(implementation = ErrorsResponse.class)))
+    @APIResponse(responseCode = "500", description = "Unknown error", 
+	content = @Content(mediaType = "application/json",
+    		schema = @Schema(implementation = String.class)))    
 	public Response addMainItem(
 			@PathParam("projectid") @NotNull Long projectid,
 			@Valid Item item) throws Exception{
@@ -120,6 +172,16 @@ public class ItemResource {
 	}
 	@POST
 	@Path("/project/{projectid}/item/{itemabove}")
+    @Operation(summary = "Create sub item for given project and existing item")
+    @APIResponse(responseCode = "201", description = "Created sub item",
+                 content = @Content(mediaType = "application/json",
+                 	schema = @Schema(implementation = Item.class)))
+    @APIResponse(responseCode = "400", description = "Invalid request data",
+    content = @Content(mediaType = "application/json",
+ 	schema = @Schema(implementation = ErrorsResponse.class)))
+    @APIResponse(responseCode = "500", description = "Unknown error", 
+	content = @Content(mediaType = "application/json",
+    		schema = @Schema(implementation = String.class)))    
 	public Response addSubItem(
 			@PathParam("projectid") @NotNull Long projectid,
 			@PathParam("itemabove") @NotNull Long itemAboveId,
@@ -145,9 +207,17 @@ public class ItemResource {
 	}
 	
 	@PUT
-	 public Response change(Item item) {
-	 	//Can Change item attributes only, no references to project, higher or sub items
-		
+    @Operation(summary = "Update item attributes (update of item attributes only, no update of project or other items in hierarchy too")
+    @APIResponse(responseCode = "201", description = "updated item",
+                 content = @Content(mediaType = "application/json",
+                 	schema = @Schema(implementation = Item.class)))
+    @APIResponse(responseCode = "400", description = "Invalid request data",
+    content = @Content(mediaType = "application/json",
+ 	schema = @Schema(implementation = ErrorsResponse.class)))
+    @APIResponse(responseCode = "500", description = "Unknown error", 
+	content = @Content(mediaType = "application/json",
+    		schema = @Schema(implementation = String.class)))    
+	public Response change(Item item) {
 		Item myItem  = Item.findById(item.id);
     	if (myItem != null) {
     		myItem.name = item.name;
@@ -162,6 +232,17 @@ public class ItemResource {
 	
 	@DELETE
     @Path("/{id}")
+    @Operation(summary = "delete item (deletion of items only, if no sub items contained. Sub items must be deleted before")
+    @Parameters({
+    	@Parameter(name = "id", in = ParameterIn.PATH, required = true, 
+    			description = "unique item identifier")})
+    @APIResponse(responseCode = "204", description = "item for given id has been deleted")
+    @APIResponse(responseCode = "400", description = "Invalid request data",
+    content = @Content(mediaType = "application/json",
+ 	schema = @Schema(implementation = ErrorsResponse.class)))
+    @APIResponse(responseCode = "500", description = "Unknown error", 
+	content = @Content(mediaType = "application/json",
+    		schema = @Schema(implementation = String.class)))    
 	public Response delete(@PathParam("id") Long id) throws Exception{
     	Item item  = Item.findById(id);
     	long itemID = item.id;

@@ -21,10 +21,19 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.enums.ParameterIn;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameters;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.resteasy.annotations.jaxrs.PathParam;
 
 import de.sn.quarkus.businessfunctions.exception.BusinessException;
+import de.sn.quarkus.businessfunctions.exception.ErrorsResponse;
 import de.sn.quarkus.businessfunctions.model.Item;
 import de.sn.quarkus.businessfunctions.model.Project;
 import io.quarkus.panache.common.Page;
@@ -36,12 +45,21 @@ import io.quarkus.panache.common.Page;
 @Transactional
 public class ProjectResource {
 	
-	@Inject
-    EntityManager em;
-	
+	@Inject EntityManager em;
 	@Inject Validator validator;
 
 	@GET
+	//OpenAPI
+    @Operation(summary = "List of projects and their contained items")
+    @Parameters({
+    	@Parameter(name = "pageNum", in = ParameterIn.QUERY,required = false, 
+    			description = "number of requested page, value >= 0"),
+    	@Parameter(name = "pageSize", in = ParameterIn.QUERY,required = false, 
+		description = "size of page (number of records), value >= 0" )
+    	})
+    @APIResponse(responseCode = "200", description = "List of projects", 
+    		content = @Content(mediaType = "application/json",
+            		schema = @Schema(type = SchemaType.ARRAY, implementation = Project.class)))
     public Response getPagableList( 
     		@QueryParam("pageNum") @DefaultValue("0") @Min(0) int pageNum, 
     		@QueryParam("pageSize") @DefaultValue("10") @Min(0) int pageSize) {
@@ -57,6 +75,19 @@ public class ProjectResource {
 	
 	@GET
     @Path("/{id}")
+    @Operation(summary = "Get project for id including contained items")
+    @Parameters({
+    	@Parameter(name = "id", in = ParameterIn.PATH, required = true, 
+    			description = "unique project identifier")})
+    @APIResponse(responseCode = "200", description = "Project for id", 
+    		content = @Content(mediaType = "application/json",
+            		schema = @Schema(type = SchemaType.ARRAY, implementation = Project.class)))
+    @APIResponse(responseCode = "400", description = "Invalid request data",
+    content = @Content(mediaType = "application/json",
+ 	schema = @Schema(implementation = ErrorsResponse.class)))
+    @APIResponse(responseCode = "500", description = "Unknown error", 
+	content = @Content(mediaType = "application/json",
+    		schema = @Schema(implementation = String.class)))    
 	public Response getProjectById(
     		@PathParam("id") @NotNull Long id) {
     	long timestamp = System.currentTimeMillis();
@@ -71,6 +102,16 @@ public class ProjectResource {
     }
 	
 	@POST
+	@Operation(summary = "Create new project (creation if project without contained items only)")
+    @APIResponse(responseCode = "201", description = "Created project",
+                 content = @Content(mediaType = "application/json",
+                 	schema = @Schema(implementation = Project.class)))
+    @APIResponse(responseCode = "400", description = "Invalid request data",
+    content = @Content(mediaType = "application/json",
+ 	schema = @Schema(implementation = ErrorsResponse.class)))
+    @APIResponse(responseCode = "500", description = "Unknown error", 
+	content = @Content(mediaType = "application/json",
+    		schema = @Schema(implementation = String.class)))    
 	public Response add(@Valid Project project) {
 		project.id = null;
 		//Items will not be stored in this method
@@ -80,7 +121,17 @@ public class ProjectResource {
 	}
 	
 	@PUT
-	 public Response change(@Valid Project project) {
+	@Operation(summary = "Update project (update on project level only, no update of items)")
+    @APIResponse(responseCode = "201", description = "updated project",
+                 content = @Content(mediaType = "application/json",
+                 	schema = @Schema(implementation = Project.class)))
+    @APIResponse(responseCode = "400", description = "Invalid request data",
+    content = @Content(mediaType = "application/json",
+ 	schema = @Schema(implementation = ErrorsResponse.class)))
+    @APIResponse(responseCode = "500", description = "Unknown error", 
+	content = @Content(mediaType = "application/json",
+    		schema = @Schema(implementation = String.class)))    
+	public Response change(@Valid Project project) {
 	 	Project myProject  = Project.findById(project.id);
     	if (myProject != null) {
     		myProject.name = project.name;
@@ -93,6 +144,20 @@ public class ProjectResource {
 	
 	@DELETE
     @Path("/{id}")
+    @Operation(summary = "delete project (deletion of project only, items have to be deleted before")
+    @Parameters({
+    	@Parameter(name = "id", in = ParameterIn.PATH, required = true, 
+    			description = "unique project identifier")})
+    @APIResponse(responseCode = "204", description = "project for given id has been deleted")
+    @APIResponse(responseCode = "400", description = "Invalid request data",
+    content = @Content(mediaType = "application/json",
+ 	schema = @Schema(implementation = ErrorsResponse.class)))
+	@APIResponse(responseCode = "404", description = "project for given id has not been found",
+    content = @Content(mediaType = "application/json",
+ 	schema = @Schema(implementation = ErrorsResponse.class)))
+    @APIResponse(responseCode = "500", description = "Unknown error", 
+	content = @Content(mediaType = "application/json",
+    		schema = @Schema(implementation = String.class)))    
 	public Response delete(@PathParam("id") Long id) throws Exception{
     	Project project  = Project.findById(id);
     	if (project != null) {
