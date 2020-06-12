@@ -156,7 +156,6 @@ public class BFTest {
 	@Order(13)
 	public void testItemDeleteRecord() {
 		Item item = Item.findById(BFTest.identifier);
-		Project project = null;
 		//Delete item from project
 		if (item.project != null) {
     		item.project.items.remove(item);
@@ -275,17 +274,14 @@ public class BFTest {
 	@Order(31)
     public void testRESTItemAddNewSubItem() {
         Item item = new Item();
-        item.project = null;
         item.name = "sub project 2";
         item.imageURL = "sub.jpg";
         item.level = 1;
-        Item mainItem = Item.findById(10L);
-        item.item = mainItem;
        
 		ValidatableResponse response = 
 				given().contentType("application/json")
                 .body(item)
-        		.when().post("/items/project/2/item/10")
+        		.when().post("/items/project/2/item/"+ BFTest.identifier)
                 .then()
 	                //.log().body()
 	                .statusCode(CREATED.getStatusCode())
@@ -387,7 +383,7 @@ public class BFTest {
         item.level = null;
         item.imageURL = null;
 
-        ValidatableResponse response = given().contentType("application/json").body(item)
+        given().contentType("application/json").body(item)
                 .when().post("/items/project/2")
                 .then()
                     //.log().body()
@@ -409,14 +405,13 @@ public class BFTest {
         Item mainItem = Item.findById(10L);
         item.item = mainItem;
        
-		ValidatableResponse response = 
-				given().contentType("application/json")
-                .body(item)
-        		.when().post("/items/project/1000/item/1000")
-                .then()
-	                .log().body()
-                    .statusCode(BAD_REQUEST.getStatusCode())
-                    .body("errorList.findAll {it.code == \"40005\"}.message",  
-                    		hasItem("Project with id 1000 does not exist"));
-    }
+		given().contentType("application/json")
+            .body(item)
+    		.when().post("/items/project/1000/item/1000")
+            .then()
+                //.log().body()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("errorList.findAll {it.code == \"40005\"}.message",  
+                		hasItem("Project with id 1000 does not exist"));
+	}
 }

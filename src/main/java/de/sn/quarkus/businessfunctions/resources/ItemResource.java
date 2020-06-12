@@ -245,7 +245,6 @@ public class ItemResource {
     		schema = @Schema(implementation = String.class)))    
 	public Response delete(@PathParam("id") Long id) throws Exception{
     	Item item  = Item.findById(id);
-    	long itemID = item.id;
     	if (item == null) {
     		return Response.status(Response.Status.NOT_FOUND).build();
     	}

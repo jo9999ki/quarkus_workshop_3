@@ -1,16 +1,15 @@
 package de.sn.quarkus.businessfunctions.model;
 
 import java.util.List;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.hibernate.validator.constraints.Length;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import io.quarkus.panache.common.Parameters;

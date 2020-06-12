@@ -1,6 +1,5 @@
 package de.sn.quarkus.businessfunctions.exception;
 
-import java.time.Instant;
 import java.util.List;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
